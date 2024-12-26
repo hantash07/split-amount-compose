@@ -2,7 +2,6 @@ package com.hantash.split_amount
 
 import android.os.Bundle
 import android.util.Log
-import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,16 +18,15 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -116,6 +113,11 @@ fun BillForm(
     val sliderPositionState = remember {
         mutableFloatStateOf(0f)
     }
+    val splitByState = remember {
+        mutableIntStateOf(1)
+    }
+    val splitRange = IntRange(start = 1, endInclusive = 100)
+
 
     Surface(
         modifier = Modifier
@@ -160,19 +162,21 @@ fun BillForm(
                         RoundIconButton(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             onClick = {
-
+                                val value = splitByState.intValue
+                                splitByState.intValue = if (value > splitRange.first) value -1 else value
                             }
                         )
                         Text(
                             modifier = Modifier
                                 .padding(start = 8.dp, end = 8.dp)
                                 .align(alignment = Alignment.CenterVertically),
-                            text = "1",
+                            text = "${splitByState.intValue}",
                         )
                         RoundIconButton(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             onClick = {
-
+                                val value = splitByState.intValue
+                                splitByState.intValue = if (value < splitRange.last) value + 1 else value
                             }
                         )
                     }
