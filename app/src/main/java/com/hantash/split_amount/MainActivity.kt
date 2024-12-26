@@ -117,6 +117,7 @@ fun BillForm(
         mutableIntStateOf(1)
     }
     val splitRange = IntRange(start = 1, endInclusive = 100)
+    val tipPercentage = (sliderPositionState.floatValue * 100).toInt()
 
 
     Surface(
@@ -194,7 +195,7 @@ fun BillForm(
                     Spacer(modifier = Modifier.width(170.dp))
                     Text(
                         modifier = Modifier.align(alignment = Alignment.CenterVertically),
-                        text = "$30.55",
+                        text = "$tipPercentage%",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -206,13 +207,12 @@ fun BillForm(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "$30.55",
+                        text = "$tipPercentage%",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Slider(
                         value = sliderPositionState.floatValue,
                         steps = 5,
-                        valueRange = 0f..100f,
                         onValueChange = {
                             sliderPositionState.floatValue = it
                         },
