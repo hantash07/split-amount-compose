@@ -18,13 +18,17 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hantash.split_amount.components.InputField
 import com.hantash.split_amount.ui.theme.SplitamountcomposeTheme
+import com.hantash.split_amount.util.calculateBillPerPerson
+import com.hantash.split_amount.util.calculateTotalTip
 import com.hantash.split_amount.widgets.RoundIconButton
 
 class MainActivity : ComponentActivity() {
@@ -65,7 +71,6 @@ fun MyApp(content: @Composable () -> Unit) {
 @Composable
 fun MainContent() {
     Column {
-        AmountContent()
         BillForm { bill ->
             Log.d("app-debug", "Bill: $bill")
         }
@@ -73,7 +78,7 @@ fun MainContent() {
 }
 
 @Composable
-fun AmountContent(perPersonAmount: Double = 0.0) {
+fun AmountContent(totalBillPerPerson: Double = 0.0) {
     Surface(
         modifier = Modifier
             .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
@@ -92,7 +97,7 @@ fun AmountContent(perPersonAmount: Double = 0.0) {
                 style = MaterialTheme.typography.headlineSmall
             )
             Text(
-                text = "$$perPersonAmount",
+                text = "$$totalBillPerPerson",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -116,9 +121,18 @@ fun BillForm(
     val splitByState = remember {
         mutableIntStateOf(1)
     }
+    val tipAmountState = remember {
+        mutableDoubleStateOf(0.0)
+    }
+    val totalBillPerPerson = remember {
+        mutableDoubleStateOf(value = 0.0)
+    }
     val splitRange = IntRange(start = 1, endInclusive = 100)
-    val tipPercentage = (sliderPositionState.floatValue * 100).toInt()
+    var tipPercentage = (sliderPositionState.floatValue * 100).toInt()
 
+    AmountContent(
+        totalBillPerPerson = totalBillPerPerson.doubleValue
+    )
 
     Surface(
         modifier = Modifier
@@ -141,10 +155,11 @@ fun BillForm(
                     if (!validationState) return@KeyboardActions
 
                     onValueChange(totalBillState.value.trim())
+
                 }
             )
 
-            if (true) {
+            if (validationState) {
                 //Split
                 Row(
                     modifier = Modifier.padding(4.dp),
@@ -161,10 +176,16 @@ fun BillForm(
                         horizontalArrangement = Arrangement.End
                     ) {
                         RoundIconButton(
-                            imageVector = Icons.Default.KeyboardArrowDown,
+                            imageVector = Icons.Default.Remove,
                             onClick = {
                                 val value = splitByState.intValue
                                 splitByState.intValue = if (value > splitRange.first) value -1 else value
+
+                                totalBillPerPerson.doubleValue = calculateBillPerPerson(
+                                    totalBill = totalBillState.value,
+                                    tipPercentage = tipPercentage,
+                                    splitBy = splitByState.intValue
+                                )
                             }
                         )
                         Text(
@@ -174,10 +195,16 @@ fun BillForm(
                             text = "${splitByState.intValue}",
                         )
                         RoundIconButton(
-                            imageVector = Icons.Default.KeyboardArrowUp,
+                            imageVector = Icons.Default.Add,
                             onClick = {
                                 val value = splitByState.intValue
                                 splitByState.intValue = if (value < splitRange.last) value + 1 else value
+
+                                totalBillPerPerson.doubleValue = calculateBillPerPerson(
+                                    totalBill = totalBillState.value,
+                                    tipPercentage = tipPercentage,
+                                    splitBy = splitByState.intValue
+                                )
                             }
                         )
                     }
@@ -195,7 +222,7 @@ fun BillForm(
                     Spacer(modifier = Modifier.width(170.dp))
                     Text(
                         modifier = Modifier.align(alignment = Alignment.CenterVertically),
-                        text = "$tipPercentage%",
+                        text = "$${tipAmountState.doubleValue}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -215,6 +242,17 @@ fun BillForm(
                         steps = 5,
                         onValueChange = {
                             sliderPositionState.floatValue = it
+                            tipPercentage = (sliderPositionState.floatValue * 100).toInt()
+
+                            tipAmountState.doubleValue = calculateTotalTip(
+                                totalBill = totalBillState.value, tipPercentage = tipPercentage
+                            )
+
+                            totalBillPerPerson.doubleValue = calculateBillPerPerson(
+                                totalBill = totalBillState.value,
+                                tipPercentage = tipPercentage,
+                                splitBy = splitByState.intValue
+                            )
                         },
                         onValueChangeFinished = {
 

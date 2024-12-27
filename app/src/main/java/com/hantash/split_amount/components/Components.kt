@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AttachMoney
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +44,7 @@ fun InputField(
             Text(text = labelId)
         },
         leadingIcon = {
-            Icon(imageVector = Icons.Rounded.Menu, contentDescription = "Money Icon")
+            Icon(imageVector = Icons.Rounded.AttachMoney, contentDescription = "Money Icon")
         },
         textStyle = TextStyle(
             fontSize = 18.sp, color = Color.Black
